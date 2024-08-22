@@ -10,6 +10,7 @@ import (
 type options struct {
 	lang               []string
 	preserveFormatting bool
+	httpClient         *http.Client
 }
 
 func WithLang(lang string) Option {
@@ -24,6 +25,12 @@ func WithPreserveFormatting(preserveFormatting bool) Option {
 	}
 }
 
+func WithHTTPClient(httpClient *http.Client) Option {
+	return func(o *options) {
+		o.httpClient = httpClient
+	}
+}
+
 type Option func(*options)
 
 type ReturnTranscript struct {
@@ -34,6 +41,7 @@ type ReturnTranscript struct {
 
 func GetTranscript(ctx context.Context, videoID string, opts ...Option) (string, error) {
 	var yt youtubeTranscript
+	yt.options.httpClient = http.DefaultClient
 	for _, opt := range opts {
 		opt(&yt.options)
 	}
@@ -75,7 +83,7 @@ func (yt *youtubeTranscript) GetTranscript(ctx context.Context, videoID string) 
 
 func (yt *youtubeTranscript) listTranscripts(videoID string) (*TranscriptList, error) {
 	tlf := TranscriptListFetcher{
-		httpClient: http.DefaultClient,
+		httpClient: yt.options.httpClient,
 	}
 
 	transcriptList, err := tlf.Fetch(videoID)

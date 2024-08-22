@@ -94,7 +94,16 @@ func (t *TranscriptListFetcher) fetchVideoHTML(videoID string) (string, error) {
 }
 
 func (t *TranscriptListFetcher) fetchHTML(videoID string) (string, error) {
-	resp, err := t.httpClient.Get(fmt.Sprintf(WATCH_URL, videoID))
+	req, err := http.NewRequest("GET", fmt.Sprintf(WATCH_URL, videoID), nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to create HTTP request: %w", err)
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36")
+
+	resp, err := t.httpClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to fetch video HTML: %w", err)
+	}
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch video HTML: %w", err)
 	}
